@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from dotenv import load_dotenv
 from os import getenv
 import yt_dlp
+import os
 import re
 
 load_dotenv()
@@ -27,6 +28,9 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 
 start_index = 0
 total_songs = sp.playlist(playlist_uri)["tracks"]["total"]
+
+os.mkdir("songs")
+os.chdir("songs")
 
 while start_index < total_songs:
 
