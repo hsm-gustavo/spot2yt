@@ -1,5 +1,8 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import requests.exceptions
+import urllib3.exceptions
+import time
 from dotenv import load_dotenv
 from os import getenv
 import yt_dlp
@@ -29,8 +32,13 @@ sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 start_index = 0
 total_songs = sp.playlist(playlist_uri)["tracks"]["total"]
 
-os.mkdir("songs")
+os.makedirs("songs", exist_ok=True)
 os.chdir("songs")
+
+yt = yt_dlp.YoutubeDL({"format": "m4a/bestaudio/best", "postprocessors": [{
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "m4a",
+        }], "quiet": True})
 
 while start_index < total_songs:
 
@@ -44,10 +52,15 @@ while start_index < total_songs:
         track_list.append(track)
 
     for i in track_list:
-        yt = yt_dlp.YoutubeDL({"format": "m4a/bestaudio/best", "postprocessors": [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "m4a",
-        }], "quiet": True})
-        yt.extract_info(f"ytsearch:{i} official audio", download=True)
+        try:
+            yt.extract_info(f"ytsearch:{i} official audio", download=True)
+        except yt_dlp.utils.DownloadError:
+            print(f"Could not download '{i}'")
+        except (requests.exceptions.ConnectionError, urllib3.exceptions.ProtocolError):
+            print("Connection Error, retrying in 5 seconds...")
+            time.sleep(5)
+            yt.extract_info(f"ytsearch:{i} official audio", download=True)
+        except Exception as e:
+            print(f"Unknown Error: {e}")
 
     start_index+=100
