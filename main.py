@@ -40,13 +40,10 @@ while start_index < total_songs:
         track_list.append(track)
 
     for i in track_list:
-        """ results = VideosSearch(i, limit=1)
-        url = results.result()["result"][0]["link"] """
-        
         yt = yt_dlp.YoutubeDL({"format": "m4a/bestaudio/best", "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "m4a",
         }], "quiet": True})
-        yt.extract_info(f"ytsearch:{i}", download=True)
+        yt.extract_info(f"ytsearch:{i} official audio", download=True)
 
     start_index+=100
