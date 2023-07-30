@@ -4,9 +4,6 @@ from dotenv import load_dotenv
 from os import getenv
 import yt_dlp
 import re
-import time
-
-start = time.time()
 
 load_dotenv()
 
@@ -53,7 +50,3 @@ while start_index < total_songs:
         yt.extract_info(f"ytsearch:{i}", download=True)
 
     start_index+=100
-
-print(f"Time taken: {time.time()-start} seconds")
-
-
