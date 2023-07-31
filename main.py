@@ -9,8 +9,11 @@ from os import getenv
 import yt_dlp
 import os
 import re
+import logging
 
 load_dotenv()
+
+logging.basicConfig(filename="download_log.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", datefmt="%d-%b-%Y %H:%M:%S")
 
 client_id = getenv("CLIENT_ID")
 client_secret = getenv("CLIENT_SECRET")
@@ -41,7 +44,7 @@ yt = yt_dlp.YoutubeDL({"format": "m4a/bestaudio/best", "postprocessors": [{
             "preferredcodec": "m4a",
         }], "quiet": True,
         "no_warnings": True,
-        "progress_hooks": [lambda d: print(f" Downloaded '{d['filename'].replace('.m4a', '')}'") if d['status'] == 'finished' else None]})
+        "progress_hooks": [lambda d: logging.info(f" Downloaded '{d['filename'].replace('.m4a', '')}'") if d['status'] == 'finished' else None]})
 
 while start_index < total_songs:
 
@@ -58,12 +61,14 @@ while start_index < total_songs:
         try:
             yt.extract_info(f"ytsearch:{i} official audio", download=True)
         except yt_dlp.utils.DownloadError:
-            print(f"Could not download '{i}'")
+            logging.warning(f"Could not download '{i}'")
         except (requests.exceptions.ConnectionError, urllib3.exceptions.ProtocolError):
-            print("Connection Error, retrying in 5 seconds...")
+            logging.warning("Connection Error, retrying in 5 seconds...")
             time.sleep(5)
             yt.extract_info(f"ytsearch:{i} official audio", download=True)
         except Exception as e:
-            print(f"Unknown Error: {e}")
+            logging.error(f"Unknown Error: {e}")
 
     start_index+=100
+
+print("A log file has been created in the current directory.")
