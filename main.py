@@ -64,7 +64,7 @@ def get_track_list(sp, playlist_uri):
 def download_tracks(yt, track_list):
     for i in tqdm(track_list, desc="Downloading", unit="song"):
         try:
-            yt.extract_info(f"ytsearch:{i} official audio", download=True)
+            yt.extract_info(f"ytsearch:{i} audio", download=True)
         except yt_dlp.utils.DownloadError:
             logging.warning(f"Could not download '{i}'")
         except (requests.exceptions.ConnectionError, urllib3.exceptions.ProtocolError):
