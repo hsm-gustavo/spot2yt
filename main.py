@@ -61,18 +61,23 @@ def get_track_list(sp, playlist_uri):
     
     return track_list
 
-def download_tracks(yt, track_list):
+def download_tracks(yt, track_list, max_retries=5, retry_delay=5):
     for i in tqdm(track_list, desc="Downloading", unit="song"):
-        try:
-            yt.extract_info(f"ytsearch:{i} audio", download=True)
-        except yt_dlp.utils.DownloadError:
-            logging.warning(f"Could not download '{i}'")
-        except (requests.exceptions.ConnectionError, urllib3.exceptions.ProtocolError):
-            logging.warning("Connection Error, retrying in 5 seconds...")
-            time.sleep(5)
-            yt.extract_info(f"ytsearch:{i} official audio", download=True)
-        except Exception as e:
-            logging.error(f"Unknown Error: {e}")
+        retry = 1
+        while retry <= max_retries:
+            try:
+                yt.extract_info(f"ytsearch:{i} audio", download=True)
+                break
+            except yt_dlp.utils.DownloadError:
+                logging.warning(f"Could not download '{i}' - Attempt {retry} out of {max_retries}")
+                retry+=1
+            except (requests.exceptions.ConnectionError, urllib3.exceptions.ProtocolError):
+                logging.warning(f"Connection Error, retrying in {retry_delay} seconds... - Attempt {retry} out of {max_retries}")
+                time.sleep(retry_delay)
+                retry+=1
+            except Exception as e:
+                logging.error(f"Unknown Error: {e}")
+                break
 
 def main():
     sp = authenticate_spotify()
