@@ -3,6 +3,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import requests.exceptions
 import urllib3.exceptions
 import time
+from tqdm import tqdm
 from dotenv import load_dotenv
 from os import getenv
 import yt_dlp
@@ -38,7 +39,9 @@ os.chdir("songs")
 yt = yt_dlp.YoutubeDL({"format": "m4a/bestaudio/best", "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "m4a",
-        }], "quiet": True})
+        }], "quiet": True,
+        "no_warnings": True,
+        "progress_hooks": [lambda d: print(f" Downloaded '{d['filename'].replace('.m4a', '')}'") if d['status'] == 'finished' else None]})
 
 while start_index < total_songs:
 
@@ -51,7 +54,7 @@ while start_index < total_songs:
         track+="- "+i["track"]["name"]
         track_list.append(track)
 
-    for i in track_list:
+    for i in tqdm(track_list, desc="Downloading", unit="song"):
         try:
             yt.extract_info(f"ytsearch:{i} official audio", download=True)
         except yt_dlp.utils.DownloadError:
